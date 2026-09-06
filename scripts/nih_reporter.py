@@ -44,6 +44,8 @@ def main():
     ap.add_argument("--limit", type=int, default=500, help="max records to pull (paged 500)")
     ap.add_argument("--summarise", action="store_true")
     a = ap.parse_args()
+    if a.limit < 1:
+        ap.error("--limit must be positive")
 
     criteria = {"fiscal_years": a.fiscal_years}
     if a.activity_codes:
@@ -54,7 +56,7 @@ def main():
         criteria["advanced_text_search"] = {"operator": "and", "search_field": "projecttitle,abstracttext,terms",
                                             "search_text": a.text}
 
-    records, offset = [], 0
+    records, offset, total = [], 0, None
     while offset < a.limit:
         payload = {"criteria": criteria, "offset": offset,
                    "limit": min(500, a.limit - offset),
@@ -62,11 +64,24 @@ def main():
                                       "ActivityCode", "AgencyIcAdmin", "Organization",
                                       "ProjectTitle"]}
         res = post(payload)
-        batch = res.get("results") or []
+        matched = (res.get("meta") or {}).get("total")
+        if not isinstance(matched, int) or isinstance(matched, bool) or matched < 0:
+            ap.exit(2, "Missing/invalid API total; completeness cannot be established.\n")
+        if total is not None and total != matched:
+            ap.exit(2, "Result total changed during pagination; retry against a stable dataset.\n")
+        total = matched
+        if total > a.limit:
+            ap.exit(2, f"TRUNCATED: {total} matches exceed --limit {a.limit}; narrow the query or raise the cap.\n")
+        batch = res.get("results")
+        if not isinstance(batch, list) or any(not isinstance(r, dict) for r in batch):
+            ap.exit(2, "Unexpected results schema; partial output discarded.\n")
         records.extend(batch)
-        if len(batch) < payload["limit"]:
+        if len(records) >= total or not batch:
             break
         offset += len(batch)
+
+    if len(records) != total:
+        ap.exit(2, "Incomplete pagination; no population totals returned.\n")
 
     if not records:
         sys.stderr.write("No records. Zero awards is a strong claim -- check the activity "
@@ -93,6 +108,7 @@ def main():
     years = sorted(by_year_amt)
     json.dump({
         "records": len(records),
+        "coverage": {"matched": total, "fetched": len(records), "truncated": False},
         "by_fiscal_year": [{"fy": y, "award_usd": round(by_year_amt[y], 0),
                             "award_count": by_year_cnt[y],
                             "avg_award": round(by_year_amt[y] / by_year_cnt[y], 0)}
