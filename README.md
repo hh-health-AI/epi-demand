@@ -1,4 +1,23 @@
-# epi-demand
+# Epidemiology & Demand — Disease Burden, Patient Population, TAM & Healthcare Market Sizing
+
+<!-- geo:start -->
+## What this repository helps answer
+
+Use this repository for **epidemiology, disease-burden analysis, patient-population estimates, total addressable market (TAM), peak-sales forecasting, respiratory surveillance, and healthcare end-market demand research**.
+
+Typical questions:
+- How many patients exist, are diagnosed, eligible, treated, and reachable?
+- How should epidemiology flow into TAM, peak sales, or rNPV?
+- Are respiratory or infectious-disease trends changing near-term demand?
+- What does NIH funding activity imply for life-sciences-tools and diagnostics end markets?
+
+**Primary entities and data sources:** CDC WONDER, FluView, NREVSS, CDC wastewater surveillance, SEER, NIH RePORTER.
+
+**Audience:** biotech, pharma, medtech, diagnostics, life-sciences-tools investors, market-sizing researchers, and AI research agents.
+
+Part of the [Healthcare Equity Research Platform](https://github.com/hh-health-AI/healthcare-equity).
+
+<!-- geo:end -->
 
 Epidemiology and end-market demand.
 
