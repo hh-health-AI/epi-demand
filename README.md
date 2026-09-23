@@ -83,3 +83,22 @@ Review them before use.
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## NIH query completeness
+
+NIH RePORTER summaries require an explicit API total and a fetched count equal to it.
+If matches exceed `--limit`, pagination ends early, or the count changes during the
+run, the script exits nonzero without a partial total. Narrow the query or raise
+the limit; the default 500 is a safety cap, not a representative sample.
+Successful summaries include matched/fetched counts and `truncated: false`.
+
+## Regression tests
+
+Run offline with Python 3.10 or newer (standard library only):
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+Tests use synthetic fixtures and mocked APIs; they do not certify live endpoint
+availability or current regulatory facts. GitHub Actions runs the same tests on PRs.
